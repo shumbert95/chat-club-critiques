@@ -75,15 +75,24 @@ setInterval(function() {
 // Fonctionnement du chat
 io.sockets.on('connection', function (socket, username) {
     socket.on('new_user', function(data) {
-        var lobby_exist = false;
+        var lobby_exists = false;
+        var room_exists = false;
         socket.user = {lobby: ent.encode(data.lobby), firstName: ent.encode(data.firstName), lastName: ent.encode(data.lastName), username:  ent.encode(data.username), user_id: ent.encode(data.user_id), room: ent.encode(data.room)};
         rooms.forEach(function(element) {
            if (element.id == socket.user.lobby) {
-               lobby_exist = true;
+               lobby_exists = true;
                element.rooms++;
+               element.messages.forEach(function(room) {
+                   if (room.room_id == socket.user.room) {
+                       room_exists = true;
+                   }
+               });
+               if (!room_exists) {
+                   element.messages.push({room_id: socket.user.room, messages: []});
+               }
            }
         });
-        if (!lobby_exist) {
+        if (!lobby_exists) {
             rooms.push({id: socket.user.lobby, messages:[{room_id: 1, messages: []}], date_start: data.lobby_date_start, date_end: data.lobby_date_end, rooms: 1});
         }
         socket.join(socket.user.lobby+"-"+socket.user.room);
