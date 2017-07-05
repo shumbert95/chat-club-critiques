@@ -85,15 +85,15 @@ io.sockets.on('connection', function (socket, username) {
         if (!lobby_exist) {
             rooms.push({id: socket.user.lobby, messages:[], date_start: data.lobby_date_start, date_end: data.lobby_date_end})
         }
-        socket.join(socket.user.lobby);
-        socket.to(socket.user.lobby).broadcast.emit('new_user_room', {"username" : socket.user.username, "firstname" :  socket.user.firstName, "lastname" : socket.user.lastName, "user_id" : socket.user.user_id});
+        socket.join(socket.user.lobby+"-"+socket.user.room);
+        socket.to(socket.user.lobby+"-"+socket.user.room).broadcast.emit('new_user_room', {"username" : socket.user.username, "firstname" :  socket.user.firstName, "lastname" : socket.user.lastName, "user_id" : socket.user.user_id});
     });
 
     socket.on('message', function (message) {
         message = ent.encode(message);
         rooms.forEach(function (element) {
             if (socket.user.lobby == element.id) {
-                element.messages[socket.user.room].push({user_id: socket.user.user_id, message: message});
+                element.messages.push({user_id: socket.user.user_id, message: message});
             }
         });
         socket.broadcast.emit('message', {username: socket.user.username, message: message});
