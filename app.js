@@ -35,7 +35,6 @@ function endLobby(room, io) {
             io.to(room.id).emit('end_lobby', 'Déconnexion..');
             io.to(room.id).emit('redirect');
             clearInterval(intervalID);
-            console.log(clients);
         }
     }, 1000);
 
@@ -77,7 +76,7 @@ setInterval(function() {
 io.sockets.on('connection', function (socket, username) {
     socket.on('new_user', function(data) {
         var lobby_exist = false;
-        socket.user = {lobby: ent.encode(data.lobby), username:  ent.encode(data.username), user_id: ent.encode(data.user_id)};
+        socket.user = {lobby: ent.encode(data.lobby), username:  ent.encode(data.username), user_id: ent.encode(data.user_id), room: ent.ecode(data.room)};
         rooms.forEach(function(element) {
            if (element.id == socket.user.lobby) {
                lobby_exist = true;
@@ -87,14 +86,14 @@ io.sockets.on('connection', function (socket, username) {
             rooms.push({id: socket.user.lobby, messages:[], date_start: data.lobby_date_start, date_end: data.lobby_date_end})
         }
         socket.join(socket.user.lobby);
-        socket.to(socket.user.lobby).broadcast.emit('new_user_room', socket.user.username);
+        socket.to(socket.user.lobby).broadcast.emit('new_user_room', [socket.user.username);
     });
 
     socket.on('message', function (message) {
         message = ent.encode(message);
         rooms.forEach(function (element) {
             if (socket.user.lobby == element.id) {
-                element.messages.push({user_id: socket.user.user_id, message: message});
+                element.messages[socket.user.room].push({user_id: socket.user.user_id, message: message});
             }
         });
         socket.broadcast.emit('message', {username: socket.user.username, message: message});
