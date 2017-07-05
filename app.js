@@ -76,7 +76,7 @@ setInterval(function() {
 io.sockets.on('connection', function (socket, username) {
     socket.on('new_user', function(data) {
         var lobby_exist = false;
-        socket.user = {lobby: ent.encode(data.lobby), firstName: ent.encode(data.firstName), lastName: ent.encode(data.lastName), username:  ent.encode(data.username), user_id: ent.encode(data.user_id), room: ent.ecode(data.room)};
+        socket.user = {lobby: ent.encode(data.lobby), firstName: ent.encode(data.firstName), lastName: ent.encode(data.lastName), username:  ent.encode(data.username), user_id: ent.encode(data.user_id), room: ent.encode(data.room)};
         rooms.forEach(function(element) {
            if (element.id == socket.user.lobby) {
                lobby_exist = true;
