@@ -79,7 +79,7 @@ io.sockets.on('connection', function (socket, username) {
            }
         });
         if (!lobby_exists) {
-            rooms.push({id: socket.user.lobby, messages:[{room_id: 1, messages: []}], date_start: data.lobby_date_start, date_end: data.lobby_date_end, rooms: 1});
+            rooms.push({id: socket.user.lobby, messages:[{room_id: 1, messages: []}], users: [{room_id: 1, users: []}], date_start: data.lobby_date_start, date_end: data.lobby_date_end, rooms: 1});
         }
         socket.join(socket.user.lobby+"-"+socket.user.room);
         socket.to(socket.user.lobby+"-"+socket.user.room).broadcast.emit('new_user_room', {"username" : socket.user.username, "firstname" :  socket.user.firstName, "lastname" : socket.user.lastName, "user_id" : socket.user.user_id});
