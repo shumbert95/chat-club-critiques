@@ -23,6 +23,7 @@ function endLobby(room, io) {
         }
     }, 1000);
 
+    // Envoie des messages à l'application Symfony pour l'enregistrement
     var http = require('http');
     jsonObject = JSON.stringify(room);
     var postheaders = {
@@ -90,7 +91,7 @@ io.sockets.on('connection', function (socket, username) {
             if (socket.user.lobby == element.id) {
                 element.messages.forEach(function (room){
                     if (room.room_id == socket.user.room) {
-                        room.messages.push({user_id: socket.user.user_id, message: message});
+                        room.messages.push({user_id: socket.user.user_id, username: socket.user.username, message: message});
                     }
                 })
             }
