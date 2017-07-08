@@ -84,10 +84,10 @@ io.sockets.on('connection', function (socket, username) {
         lobbies.forEach(function(lobby) {
            if (lobby.id == socket.user.lobby) {
                lobby.users.push({room_id: socket.user.room, user: socket.user});
+               socket.join(socket.user.lobby+"-"+socket.user.room);
+               socket.to(socket.user.lobby+"-"+socket.user.room).emit('new_user_room', {"username" : socket.user.username, users: lobby.users});
            }
         });
-        socket.join(socket.user.lobby+"-"+socket.user.room);
-        socket.to(socket.user.lobby+"-"+socket.user.room).broadcast.emit('new_user_room', {"username" : socket.user.username, users: lobby.users});
     });
 
     socket.on('message', function (message) {
