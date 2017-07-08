@@ -47,11 +47,11 @@ function endLobby(room, io) {
     });
 }
 
-var rooms = [];
+var lobbies = [];
 // Tache récurrente pour terminer les salons
 setInterval(function() {
     var datetime = new Date().today() + " " + new Date().timeNow();
-    rooms.forEach(function(element) {
+    lobbies.forEach(function(element) {
         if (element.date_end == datetime) {
             endLobby(element, io);
         }
@@ -64,7 +64,7 @@ io.sockets.on('connection', function (socket, username) {
         var lobby_exists = false;
         var room_exists = false;
         socket.user = {lobby: ent.encode(data.lobby), firstName: ent.encode(data.firstName), lastName: ent.encode(data.lastName), username:  ent.encode(data.username), user_id: ent.encode(data.user_id), room: ent.encode(data.room)};
-        rooms.forEach(function(element) {
+        lobbies.forEach(function(element) {
            if (element.id == socket.user.lobby) {
                lobby_exists = true;
                element.rooms++;
@@ -79,15 +79,20 @@ io.sockets.on('connection', function (socket, username) {
            }
         });
         if (!lobby_exists) {
-            rooms.push({id: socket.user.lobby, messages:[{room_id: 1, messages: []}], users: [{room_id: 1, users: []}], date_start: data.lobby_date_start, date_end: data.lobby_date_end, rooms: 1});
+            lobbies.push({id: socket.user.lobby, messages:[{room_id: 1, messages: []}], users: [], date_start: data.lobby_date_start, date_end: data.lobby_date_end, rooms: 1});
         }
+        lobbies.forEach(function(lobby) {
+           if (lobby.id == socket.user.lobby) {
+               lobby.users.push({room_id: socket.user.room, user: socket.user});
+           }
+        });
         socket.join(socket.user.lobby+"-"+socket.user.room);
-        socket.to(socket.user.lobby+"-"+socket.user.room).broadcast.emit('new_user_room', {"username" : socket.user.username, "firstname" :  socket.user.firstName, "lastname" : socket.user.lastName, "user_id" : socket.user.user_id});
+        socket.to(socket.user.lobby+"-"+socket.user.room).broadcast.emit('new_user_room', {"username" : socket.user.username, users: lobby.users});
     });
 
     socket.on('message', function (message) {
         message = ent.encode(message);
-        rooms.forEach(function (element) {
+        lobbies.forEach(function (element) {
             if (socket.user.lobby == element.id) {
                 element.messages.forEach(function (room){
                     if (room.room_id == socket.user.room) {
@@ -97,6 +102,20 @@ io.sockets.on('connection', function (socket, username) {
             }
         });
         socket.to(socket.user.lobby+"-"+socket.user.room).broadcast.emit('message', {username: socket.user.username, message: message});
+    });
+
+    socket.on('disconnect', function() {
+        console.log(socket.user.username + ' disconnected !');
+        lobbies.forEach(function(lobby) {
+           if (lobby.id == socket.user.lobby) {
+               lobby.users.forEach(function(user, index) {
+                  if (user.user == socket.user) {
+                      lobby.users.splice(index, 1);
+                      socket.to(socket.user.lobby+"-"+socket.user.room).emit('user_disconnect', {user: socket.user});
+                  }
+               });
+           }
+        });
     });
 });
 
