@@ -85,7 +85,7 @@ io.sockets.on('connection', function (socket, username) {
            if (lobby.id == socket.user.lobby) {
                lobby.users.push({room_id: socket.user.room, user: socket.user});
                socket.join(socket.user.lobby+"-"+socket.user.room);
-               socket.to(socket.user.lobby+"-"+socket.user.room).broadcast.emit('new_user_room', {"username" : socket.user.username, users: lobby.users});
+               io.sockets.in(socket.user.lobby+"-"+socket.user.room).emit('new_user_room', {"username" : socket.user.username, users: lobby.users});
            }
         });
     });
