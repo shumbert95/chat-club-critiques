@@ -31,7 +31,7 @@ function endLobby(room, io) {
         'Content-Length' : Buffer.byteLength(jsonObject, 'utf8')
     };
     var options = {
-        host : 'jeremyfsmoreau.com',
+        host : 'club-critiques.dev',
         port : 80,
         path : '/app_dev.php/api/chat/messages',
         method : 'POST',
@@ -113,8 +113,8 @@ io.sockets.on('connection', function (socket, username) {
         if (!user) return;
         lobbies.forEach(function(lobby) {
            if (lobby.id == user.lobby) {
-               lobby.users.forEach(function(user, index) {
-                  if (user.user == user) {
+               lobby.users.forEach(function(connected_user, index) {
+                  if (connected_user.user == user) {
                       lobby.users.splice(index, 1);
                       socket.to(user.lobby+"-"+user.room).broadcast.emit('user_disconnect', {user: user});
                   }
