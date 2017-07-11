@@ -67,6 +67,7 @@ io.sockets.on('connection', function (socket, username) {
         var lobby_exists = false;
         var room_exists = false;
         socket.user = {lobby: ent.encode(data.lobby), firstName: ent.encode(data.firstName), lastName: ent.encode(data.lastName), username:  ent.encode(data.username), user_id: ent.encode(data.user_id), room: ent.encode(data.room)};
+        user = socket.user;
         lobbies.forEach(function(element) {
            if (element.id == socket.user.lobby) {
                lobby_exists = true;
@@ -92,9 +93,6 @@ io.sockets.on('connection', function (socket, username) {
                io.sockets.in(socket.user.lobby+"-"+socket.user.room).emit('new_user_room', {"username" : socket.user.username, users: lobby.users});
            }
         });
-    });
-    socket.on('cookie_value_log', function(x){
-        user = x;
     });
 
     socket.on('message', function (message) {
