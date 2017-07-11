@@ -48,6 +48,8 @@ function endLobby(room, io) {
 }
 
 var lobbies = [];
+var allClients = [];
+
 // Tache récurrente pour terminer les salons
 setInterval(function() {
     var datetime = new Date().today() + " " + new Date().timeNow();
@@ -84,6 +86,7 @@ io.sockets.on('connection', function (socket, username) {
         lobbies.forEach(function(lobby) {
            if (lobby.id == socket.user.lobby) {
                lobby.users.push({room_id: socket.user.room, user: socket.user});
+               allClients.push({user: socket.user});
                socket.join(socket.user.lobby+"-"+socket.user.room);
                io.sockets.in(socket.user.lobby+"-"+socket.user.room).emit('new_user_room', {"username" : socket.user.username, users: lobby.users});
            }
@@ -105,13 +108,14 @@ io.sockets.on('connection', function (socket, username) {
     });
 
     socket.on('disconnect', function() {
-        console.log(socket.user.username + ' disconnected !');
+        var i = allClients.indexOf(socket);
+        console.log(allClients[i].user.username + ' disconnected !');
         lobbies.forEach(function(lobby) {
-           if (lobby.id == socket.user.lobby) {
+           if (lobby.id == allClients[i].user.lobby) {
                lobby.users.forEach(function(user, index) {
-                  if (user.user == socket.user) {
+                  if (user.user == allClients[i].user) {
                       lobby.users.splice(index, 1);
-                      socket.to(socket.user.lobby+"-"+socket.user.room).broadcast.emit('user_disconnect', {user: socket.user});
+                      socket.to(allClients[i].user.lobby+"-"+allClients[i].user.room).broadcast.emit('user_disconnect', {user: allClients[i].user});
                   }
                });
            }
