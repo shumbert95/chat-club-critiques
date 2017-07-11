@@ -111,13 +111,12 @@ io.sockets.on('connection', function (socket, username) {
 
     socket.on('disconnect', function() {
         if (!user) return;
-        console.log(user+ " Left the conversation! :)");
         lobbies.forEach(function(lobby) {
-           if (lobby.id == allClients[i].user.lobby) {
+           if (lobby.id == user.lobby) {
                lobby.users.forEach(function(user, index) {
-                  if (user.user == allClients[i].user) {
+                  if (user.user == user) {
                       lobby.users.splice(index, 1);
-                      socket.to(allClients[i].user.lobby+"-"+allClients[i].user.room).broadcast.emit('user_disconnect', {user: allClients[i].user});
+                      socket.to(user.lobby+"-"+user.room).broadcast.emit('user_disconnect', {user: user});
                   }
                });
            }
