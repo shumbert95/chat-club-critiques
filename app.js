@@ -62,6 +62,7 @@ setInterval(function() {
 
 // Fonctionnement du chat
 io.sockets.on('connection', function (socket, username) {
+    var user;
     socket.on('new_user', function(data) {
         var lobby_exists = false;
         var room_exists = false;
@@ -92,6 +93,9 @@ io.sockets.on('connection', function (socket, username) {
            }
         });
     });
+    socket.on('cookie_value_log', function(x){
+        user = x;
+    });
 
     socket.on('message', function (message) {
         message = ent.encode(message);
@@ -108,8 +112,8 @@ io.sockets.on('connection', function (socket, username) {
     });
 
     socket.on('disconnect', function() {
-        var i = allClients.indexOf(socket);
-        console.log(allClients[i].user.username + ' disconnected !');
+        if (!user) return;
+        console.log(user+ " Left the conversation! :)");
         lobbies.forEach(function(lobby) {
            if (lobby.id == allClients[i].user.lobby) {
                lobby.users.forEach(function(user, index) {
