@@ -86,9 +86,18 @@ io.sockets.on('connection', function (socket, username) {
             lobbies.push({id: socket.user.lobby, messages:[{room_id: 1, messages: []}], users: [], date_start: data.lobby_date_start, date_end: data.lobby_date_end, rooms: 1});
         }
         lobbies.forEach(function(lobby) {
+           var user_exist = false;
            if (lobby.id == socket.user.lobby) {
-               lobby.users.push({room_id: socket.user.room, user: socket.user});
-               allClients.push({user: socket.user});
+               lobby.users.forEach(function(user) {
+                   if (user.user.user_id == socket.user.user_id) {
+                       user_exist = true;
+                   }
+               });
+               if (!user_exist) {
+                   console.log("test");
+                   lobby.users.push({room_id: socket.user.room, user: socket.user});
+                   allClients.push({user: socket.user});
+               }
                socket.join(socket.user.lobby+"-"+socket.user.room);
                io.sockets.in(socket.user.lobby+"-"+socket.user.room).emit('new_user_room', {"username" : socket.user.username, users: lobby.users});
            }
