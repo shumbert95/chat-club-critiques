@@ -4,6 +4,12 @@ var app = require('express')(),
     ent = require('ent'),
     fs = require('fs');
 
+
+
+var lobbies = [];
+var allClients = [];
+
+
 Date.prototype.today = function () {
     return this.getFullYear() + '-' + (((this.getMonth()+1) < 10)?"0":"") + (this.getMonth()+1) + '-' + ((this.getDate() < 10)?"0":"") + this.getDate();
 };
@@ -11,21 +17,19 @@ Date.prototype.timeNow = function () {
     return ((this.getHours() < 10)?"0":"") + this.getHours() +":"+ ((this.getMinutes() < 10)?"0":"") + this.getMinutes();
 };
 
-function endLobby(room, io) {
-    io.sockets.to(room.id).emit('end_lobby', 'Le salon vient de se terminer. Il va donc fermer. Vous serez redirigé à la page d\'accueil dans :');
-    var x = 1;
-    var intervalID = setInterval(function () {
-        io.to(room.id).emit('end_lobby', '' + (10-x) + ' secondes..');
-        if (x++ == 10) {
-            io.to(room.id).emit('end_lobby', 'Déconnexion..');
-            io.to(room.id).emit('redirect');
-            clearInterval(intervalID);
-        }
-    }, 1000);
+function sendRedirect(io, lobby, i) {
+}
 
+function endLobby(lobby, io) {
+    var i = 0;
+    for (i; i<lobby.rooms; i++) {
+        io.sockets.to(lobby.id+"-"+i).emit('end_lobby', 'Le salon vient de se terminer. vous allez être redirigé dans 10 sec..');
+        io.sockets.to(lobby.id+"-"+i).emit('redirect');
+    }
+    lobbies.splice(lobbies.indexOf(lobby), 1);
     // Envoie des messages à l'application Symfony pour l'enregistrement
     var http = require('http');
-    jsonObject = JSON.stringify(room);
+    jsonObject = JSON.stringify(lobby);
     var postheaders = {
         'Content-Type' : 'application/json',
         'Content-Length' : Buffer.byteLength(jsonObject, 'utf8')
@@ -46,9 +50,6 @@ function endLobby(room, io) {
         console.error(e);
     });
 }
-
-var lobbies = [];
-var allClients = [];
 
 // Tache récurrente pour terminer les salons
 setInterval(function() {
@@ -83,7 +84,7 @@ io.sockets.on('connection', function (socket, username) {
            }
         });
         if (!lobby_exists) {
-            lobbies.push({id: socket.user.lobby, messages:[{room_id: 1, messages: []}], users: [], date_start: data.lobby_date_start, date_end: data.lobby_date_end, rooms: 1});
+            lobbies.push({id: socket.user.lobby, messages:[{room_id: 0, messages: []}], users: [], date_start: data.lobby_date_start, date_end: data.lobby_date_end, rooms: 1});
         }
         lobbies.forEach(function(lobby) {
            var user_exist = false;
@@ -94,7 +95,6 @@ io.sockets.on('connection', function (socket, username) {
                    }
                });
                if (!user_exist) {
-                   console.log("test");
                    lobby.users.push({room_id: socket.user.room, user: socket.user});
                    allClients.push({user: socket.user});
                }
