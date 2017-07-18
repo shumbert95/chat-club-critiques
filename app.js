@@ -28,7 +28,7 @@ function save(lobby) {
     var options = {
         host : 'club-critiques.dev',
         port : 80,
-        path : '/app_dev.php/api/chat/messages',
+        path : '/api/chat/messages',
         method : 'POST',
         headers : postheaders
     };
