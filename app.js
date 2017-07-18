@@ -17,16 +17,7 @@ Date.prototype.timeNow = function () {
     return ((this.getHours() < 10)?"0":"") + this.getHours() +":"+ ((this.getMinutes() < 10)?"0":"") + this.getMinutes();
 };
 
-function sendRedirect(io, lobby, i) {
-}
-
-function endLobby(lobby, io) {
-    var i = 0;
-    for (i; i<lobby.rooms; i++) {
-        io.sockets.to(lobby.id+"-"+i).emit('end_lobby', 'Le salon vient de se terminer. vous allez être redirigé dans 10 sec..');
-        io.sockets.to(lobby.id+"-"+i).emit('redirect');
-    }
-    lobbies.splice(lobbies.indexOf(lobby), 1);
+function save(lobby) {
     // Envoie des messages à l'application Symfony pour l'enregistrement
     var http = require('http');
     jsonObject = JSON.stringify(lobby);
@@ -51,6 +42,16 @@ function endLobby(lobby, io) {
     });
 }
 
+function endLobby(lobby, io) {
+    var i = 0;
+    for (i; i<lobby.rooms; i++) {
+        io.sockets.to(lobby.id+"-"+i).emit('end_lobby', 'Le salon vient de se terminer. vous allez être redirigé dans 10 sec..');
+        io.sockets.to(lobby.id+"-"+i).emit('redirect');
+    }
+    lobbies.splice(lobbies.indexOf(lobby), 1);
+    save(lobby);
+}
+
 // Tache récurrente pour terminer les salons
 setInterval(function() {
     var datetime = new Date().today() + " " + new Date().timeNow();
@@ -58,6 +59,7 @@ setInterval(function() {
         if (element.date_end == datetime) {
             endLobby(element, io);
         }
+        save(element)
     });
 }, 20 * 1000);
 
